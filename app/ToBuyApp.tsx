@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import ToBuyItem, { ToBuyItemType } from './ToBuyItem';
 
-const ToBuy: React.FC<{ storageKey: string }> = ({ storageKey }) => {
+const ToBuy: React.FC<{ storageKey: string; onShowInfo?: (message: string) => void }> = ({ storageKey, onShowInfo = () => {} }) => {
     const [items, setItems] = useState<ToBuyItemType[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(true);
@@ -73,10 +73,14 @@ const ToBuy: React.FC<{ storageKey: string }> = ({ storageKey }) => {
     };
 
     const deleteItem = async (id: string) => {
+        const itemToDelete = items.find(item => item.id === id);
+        if (!itemToDelete) return;
+
         try {
             const response = await fetch(`/api/tobuy/${id}`, { method: 'DELETE' });
             if (await handleApiError(response)) {
                 setItems(prev => prev.filter(item => item.id !== id));
+                onShowInfo(`"${itemToDelete.text}" is deleted`);
             }
         } catch (error) {
             console.error('Error deleting item:', error);
@@ -157,7 +161,7 @@ const ToBuy: React.FC<{ storageKey: string }> = ({ storageKey }) => {
                         }
                     }}
                     placeholder="Add item..."
-                    className="w-full min-w-0 flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base sm:text-lg placeholder:text-gray-500 placeholder:opacity-80"
+                    className="w-full min-w-0 flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base sm:text-lg text-slate-900 placeholder:text-slate-500 placeholder:opacity-80"
                 />
                 <button
                     onClick={addItem}
