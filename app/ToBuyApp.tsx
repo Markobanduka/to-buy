@@ -145,7 +145,7 @@ const ToBuy: React.FC<{ storageKey: string }> = ({ storageKey }) => {
                     Database connected successfully.
                 </div>
             )}
-            <div className="flex gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row">
                 <input
                     type="text"
                     value={inputValue}
@@ -157,11 +157,11 @@ const ToBuy: React.FC<{ storageKey: string }> = ({ storageKey }) => {
                         }
                     }}
                     placeholder="Add item..."
-                    className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-lg"
+                    className="w-full min-w-0 flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base sm:text-lg placeholder:text-gray-500 placeholder:opacity-80"
                 />
                 <button
                     onClick={addItem}
-                    className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
+                    className="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold text-sm sm:text-base"
                 >
                     Add
                 </button>

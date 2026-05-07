@@ -52,21 +52,32 @@ const ToBuyItem: React.FC<{ item: ToBuyItemType; onToggle: () => void; onDelete:
                 <>
                     <span
                         onDoubleClick={() => setIsEditing(true)}
-                        className={`flex-1 text-lg cursor-pointer ${item.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}
+                        className={`flex-1 text-sm sm:text-lg cursor-pointer ${item.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}
                     >
                         {item.text}
                     </span>
                     <button
                         onClick={onToggle}
-                        className={`px-4 py-2 rounded transition-colors ${item.completed ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-yellow-500 text-white hover:bg-yellow-600'}`}
+                        className={`px-4 py-2 rounded transition-colors text-sm sm:text-base ${item.completed ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-yellow-500 text-white hover:bg-yellow-600'}`}
                     >
-                        {item.completed ? 'Undo' : 'Done'}
+                        {item.completed ? (
+                            <>
+                                <span className="sm:hidden">↺</span>
+                                <span className="hidden sm:inline">Undo</span>
+                            </>
+                        ) : (
+                            <>
+                                <span className="sm:hidden">✔</span>
+                                <span className="hidden sm:inline">Done</span>
+                            </>
+                        )}
                     </button>
                     <button
                         onClick={onDelete}
-                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm sm:text-base"
                     >
-                        Delete
+                        <span className="sm:hidden">x</span>
+                        <span className="hidden sm:inline">Delete</span>
                     </button>
                 </>
             )}
