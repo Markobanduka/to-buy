@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   }
 
   const { data, error } = await supabase
-    .from('todos')
+    .from('tobuy')
     .select('*')
     .eq('list_type', listType)
     .order('created_at', { ascending: true })
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { data, error } = await supabase
-    .from('todos')
+    .from('tobuy')
     .insert([{ text, list_type: listType, completed: false }])
     .select()
 

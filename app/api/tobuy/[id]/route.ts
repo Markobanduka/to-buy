@@ -10,7 +10,7 @@ export async function PUT(
   const { text, completed } = body
 
   const { data, error } = await supabase
-    .from('todos')
+    .from('tobuy')
     .update({ text, completed })
     .eq('id', id)
     .select()
@@ -33,7 +33,7 @@ export async function DELETE(
   const { id } = await params;
 
   const { error } = await supabase
-    .from('todos')
+    .from('tobuy')
     .delete()
     .eq('id', id)
 

@@ -7,18 +7,29 @@ const ToBuy: React.FC<{ storageKey: string }> = ({ storageKey }) => {
     const [items, setItems] = useState<ToBuyItemType[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [dbConnected, setDbConnected] = useState<boolean | null>(null);
 
     const listType = storageKey === 'generalToBuy' ? 'general' : 'now';
 
     const fetchItems = useCallback(async () => {
         try {
-            const response = await fetch(`/api/todos?listType=${listType}`);
+            const response = await fetch(`/api/tobuy?listType=${listType}`);
             if (response.ok) {
                 const data = await response.json();
                 setItems(data);
+                setDbConnected(true);
+                setErrorMessage('');
+            } else {
+                const errorData = await response.json();
+                const message = errorData?.error || 'Failed to connect to database.';
+                setErrorMessage(message);
+                setDbConnected(false);
             }
         } catch (error) {
             console.error('Error fetching items:', error);
+            setErrorMessage('Cannot connect to the database. Check Supabase settings.');
+            setDbConnected(false);
         } finally {
             setLoading(false);
         }
@@ -29,33 +40,48 @@ const ToBuy: React.FC<{ storageKey: string }> = ({ storageKey }) => {
         fetchItems();
     }, [fetchItems]);
 
+    const handleApiError = async (response: Response) => {
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            const message = errorData?.error || 'Database request failed.';
+            setErrorMessage(message);
+            setDbConnected(false);
+            return false;
+        }
+        return true;
+    };
+
     const addItem = async () => {
         if (inputValue.trim()) {
             try {
-                const response = await fetch('/api/todos', {
+                const response = await fetch('/api/tobuy', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text: inputValue.trim(), listType }),
                 });
-                if (response.ok) {
+                if (await handleApiError(response)) {
                     const newItem = await response.json();
                     setItems(prev => [...prev, newItem]);
                     setInputValue('');
                 }
             } catch (error) {
                 console.error('Error adding item:', error);
+                setErrorMessage('Cannot add item because the database is unavailable.');
+                setDbConnected(false);
             }
         }
     };
 
     const deleteItem = async (id: string) => {
         try {
-            const response = await fetch(`/api/todos/${id}`, { method: 'DELETE' });
-            if (response.ok) {
+            const response = await fetch(`/api/tobuy/${id}`, { method: 'DELETE' });
+            if (await handleApiError(response)) {
                 setItems(prev => prev.filter(item => item.id !== id));
             }
         } catch (error) {
             console.error('Error deleting item:', error);
+            setErrorMessage('Cannot delete item because the database is unavailable.');
+            setDbConnected(false);
         }
     };
 
@@ -64,17 +90,19 @@ const ToBuy: React.FC<{ storageKey: string }> = ({ storageKey }) => {
         if (!item) return;
 
         try {
-            const response = await fetch(`/api/todos/${id}`, {
+            const response = await fetch(`/api/tobuy/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: item.text, completed: !item.completed }),
             });
-            if (response.ok) {
+            if (await handleApiError(response)) {
                 const updatedItem = await response.json();
                 setItems(prev => prev.map(i => i.id === id ? updatedItem : i));
             }
         } catch (error) {
             console.error('Error updating item:', error);
+            setErrorMessage('Cannot update item because the database is unavailable.');
+            setDbConnected(false);
         }
     };
 
@@ -85,17 +113,19 @@ const ToBuy: React.FC<{ storageKey: string }> = ({ storageKey }) => {
             const item = items.find(i => i.id === id);
             if (!item) return;
 
-            const response = await fetch(`/api/todos/${id}`, {
+            const response = await fetch(`/api/tobuy/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: newText.trim(), completed: item.completed }),
             });
-            if (response.ok) {
+            if (await handleApiError(response)) {
                 const updatedItem = await response.json();
                 setItems(prev => prev.map(i => i.id === id ? updatedItem : i));
             }
         } catch (error) {
             console.error('Error editing item:', error);
+            setErrorMessage('Cannot edit item because the database is unavailable.');
+            setDbConnected(false);
         }
     };
 
@@ -105,6 +135,16 @@ const ToBuy: React.FC<{ storageKey: string }> = ({ storageKey }) => {
 
     return (
         <div className="space-y-6">
+            {dbConnected === false && (
+                <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-700">
+                    <strong>Database connection error:</strong> {errorMessage}
+                </div>
+            )}
+            {dbConnected === true && (
+                <div className="rounded-xl border border-green-300 bg-green-50 p-4 text-green-700">
+                    Database connected successfully.
+                </div>
+            )}
             <div className="flex gap-4">
                 <input
                     type="text"
